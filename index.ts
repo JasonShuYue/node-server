@@ -17,7 +17,14 @@ server.on("request", (request: IncomingMessage, response: ServerResponse) => {
   request.on("end", () => {
     const finalBody = Buffer.concat(arr).toString();
     console.log("finalBody:", finalBody);
-    response.end("hi!!!");
+
+    response.statusCode = 404;
+    response.setHeader("Name", "Jason_Shu");
+
+    response.write("1\n");
+    response.write("2\n");
+    response.write("3\n");
+    response.end();
   });
 });
 
