@@ -7,10 +7,18 @@ import * as url from "url";
 const server = http.createServer();
 const publicDir = path.resolve(__dirname, "public");
 
+const cacheTime = 200 * 3600 * 24; // 缓存200天
+
 server.on("request", (request: IncomingMessage, response: ServerResponse) => {
-  const { url: originUrl } = request;
+  const { url: originUrl, method } = request;
   const { pathname } = url.parse(originUrl);
   let fileName = pathname.substring(1);
+
+  if (method === "POST") {
+    response.statusCode = 405;
+    response.end();
+    return;
+  }
 
   if (fileName === "") {
     fileName = "index.html";
@@ -28,6 +36,7 @@ server.on("request", (request: IncomingMessage, response: ServerResponse) => {
         response.end("服务器繁忙，请稍后再试");
       }
     } else {
+      response.setHeader("Cache-Control", `public, max-age=${cacheTime}`);
       response.end(data);
     }
   });
