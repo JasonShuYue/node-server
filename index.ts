@@ -10,14 +10,25 @@ const publicDir = path.resolve(__dirname, "public");
 server.on("request", (request: IncomingMessage, response: ServerResponse) => {
   const { url: originUrl } = request;
   const { pathname } = url.parse(originUrl);
-  const fileName = pathname.substring(1);
+  let fileName = pathname.substring(1);
+
+  if (fileName === "") {
+    fileName = "index.html";
+  }
 
   fs.readFile(path.resolve(publicDir, fileName), (error, data) => {
     if (error) {
-      response.statusCode = 404;
-      response.end("404");
+      if (error.code === "ENOENT") {
+        response.statusCode = 404;
+        fs.readFile(path.resolve(publicDir, "404.html"), (error, data) => {
+          response.end(data);
+        });
+      } else {
+        response.statusCode = 500;
+        response.end("服务器繁忙，请稍后再试");
+      }
     } else {
-      response.end(data.toString());
+      response.end(data);
     }
   });
 });
